@@ -10,7 +10,7 @@ if __name__ == '__main__':
 				'misc.forsale':['00','new','sale','10','offer','shipping','price','condition'],
 				'rec.autos':['car','cars','engine','new','good','time','oil','speed'],
 				'rec.motorcycles':['bike','ride','good','time','motorcycle','new','bikes','dog'],
-				'rec.sport.baseball':['baseball','hit','runs','mlb',''],
+				'rec.sport.baseball':['baseball','hit','runs','bat'],
 				'rec.sport.hockey':['hockey','period','nhl','ice','skate','goal'],
 				'sci.crpyt':['key','encryption','government','chip','clipper','security','privacy','information'],
 				'sci.electronics':['power','circuit','ground','wire','current'],
@@ -20,8 +20,9 @@ if __name__ == '__main__':
 				'talk.politics.mideast':['armenian','isreal','turkish','jews','israeli','arab','turkey','war'],
 				'talk.politics.misc':['president','people','government','stephanopoulos','mr','right'],
 				'talk.religion.misc':['church','religion','homosexual','sex','bible']}
+	### set parameters. n_features is the size of the vocab
 	n_features = 1000
-	n_topics = 2
+	n_topics = 4
 	n_top_words = 20
 	n_iter = 1000
 
@@ -35,7 +36,7 @@ if __name__ == '__main__':
 	# d = .9
 
 	### ex 2
-	bc = ['alt.atheism','rec.sport.baseball','talks.politics.guns']
+	bc = ['alt.atheism','rec.sport.baseball','talk.politics.guns']
 	ic = ['sci.space']
 	d = .7
 
@@ -49,8 +50,10 @@ if __name__ == '__main__':
 	documents = df.get_data()
 
 	### set some seed words, refer to all_seed_words
+	### currently if a seed word doesnt isnt part of the vocab it will crash
 	# seed_words = [['people','god','think'],['space','nasa','earth','launch']]
-	seed_words = [['people','god'],['space','nasa']]
+	seed_words = [['people','god','religion','evidence'],['space','nasa','earth','launch'],
+		['baseball','hit','runs','bat'],['guns','right','law','government']]
 
 	### create the model based on the documents
 	model = lda_model.LDA_Model(documents)
