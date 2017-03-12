@@ -50,10 +50,13 @@ class DataFetcher:
 
 
 class LDA_Model:
-	def __init__(self, documents):
+	def __init__(self, documents=None):
 		self.documents = documents
 
-	def documents_to_topic_model(self,n_topics,n_features,seed_words=None,original=False):
+	def set_documents(self,documents):
+		self.documents = documents
+
+	def documents_to_topic_model(self,n_topics,n_features,n_iter,seed_words=None,original=False):
 		print("Extracting tf features for LDA...")
 		# We use a few heuristics to filter out useless terms early on: the posts are stripped of headers,
 		# footers and quoted replies, and common English words, words occurring in only one document or 
@@ -67,7 +70,7 @@ class LDA_Model:
 		
 		seeds = self.get_seed_indices(seed_words)
 
-		self.model = lda.LDA(n_topics=n_topics, n_iter=900, random_state=1)
+		self.model = lda.LDA(n_topics=n_topics, n_iter=n_iter, random_state=1)
 		if original:
 			self.model.fit(X)
 		else:
