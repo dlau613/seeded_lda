@@ -5,15 +5,26 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.datasets import fetch_20newsgroups
 
+from stopwords import STOP_WORDS
 import numpy as np
 import lda
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DataFetcher:
 	def __init__(self,balanced_categories=None,imbalanced_categories=None,discard=0):
 		self.balanced_categories = balanced_categories
 		self.imbalanced_categories = imbalanced_categories
 		self.discard = discard
+		if len(logger.handlers) == 1 and isinstance(logger.handlers[0], logging.NullHandler):
+			logging.basicConfig(level=logging.DEBUG)
 
+	def set_params(self,bc=None,ic=None,d=0):
+		self.balanced_categories = bc
+		self.imbalanced_categories = ic
+		self.discard = d	
 	def set_balanced_categories(self,balanced_categories):
 		self.balanced_categories = balanced_categories
 
@@ -30,6 +41,8 @@ class DataFetcher:
 		d is the fraction of the documents to discard for the imbalanced topics.
 		If no params given then all the data will be fetched.
 		If only balanced categories are given then only those will be fetched.
+
+		it return a list of text documents
 		"""
 		if self.imbalanced_categories==None:
 			if self.balanced_categories == None:
@@ -50,9 +63,12 @@ class DataFetcher:
 
 
 class LDA_Model:
-	def __init__(self, documents=None):
+	def __init__(self, documents=None,max_df=.5,min_df=2):
 		self.documents = documents
-
+		self.max_df = max_df
+		self.min_df = min_df
+		if len(logger.handlers) == 1 and isinstance(logger.handlers[0], logging.NullHandler):
+			logging.basicConfig(level=logging.DEBUG)
 	def set_documents(self,documents):
 		self.documents = documents
 
@@ -62,24 +78,30 @@ class LDA_Model:
 		# footers and quoted replies, and common English words, words occurring in only one document or 
 		# in at least 95% of the documents are removed. Use tf (raw term count) features for LDA.
 		# tf is a csr_matrix 
-		tf_vectorizer = CountVectorizer(max_df=0.95, min_df=2, max_features=n_features,stop_words='english')
+		tf_vectorizer = CountVectorizer(max_df=self.max_df, min_df=self.min_df, max_features=n_features,stop_words=STOP_WORDS)
 		tf = tf_vectorizer.fit_transform(self.documents)
 		self.vocab = tf_vectorizer.get_feature_names()
 		tf2 = self.remove_zero_rows(tf)
-		X = tf2.toarray()
+		self.X = X = tf2.toarray()
 		
+		# TODO: currently crashes if a seed_word is not in the vocab
 		seeds = self.get_seed_indices(seed_words)
 
-		self.model = lda.LDA(n_topics=n_topics, n_iter=n_iter, random_state=1)
+		self.model = lda.LDA(n_topics=n_topics, n_iter=n_iter, random_state=1,refresh=100)
 		if original:
 			self.model.fit(X)
 		else:
 			self.model.fit_seeded(X,seeds)
 
+	def test(self,n):
+		return self.model.transform(self.X[n])
+
+
 	def remove_zero_rows(self,X):
 	    # X is a scipy sparse matrix. We want to remove all zero rows from it
 	    nonzero_row_indice, _ = X.nonzero()
 	    unique_nonzero_indice = np.unique(nonzero_row_indice)
+	    logger.info("Removed {} all zero rows".format(X.shape[0]-X[unique_nonzero_indice].shape[0]))
 	    return X[unique_nonzero_indice]
 
 	def get_seed_indices(self,seed_words):
@@ -89,7 +111,10 @@ class LDA_Model:
 		for i,topic in enumerate(seed_words):
 			s = []
 			for j,seed in enumerate(topic):
-				s.append(self.vocab.index(seed))
+				if seed in self.vocab:
+					s.append(self.vocab.index(seed))
+				else:
+					logger.info("The seed word '{}' wasn't in the vocabulary".format(seed))
 			seeds.append(s)
 		return seeds
 
