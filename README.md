@@ -1,8 +1,9 @@
 Modified the lda package that can be found [here](https://pypi.python.org/pypi/lda)
 
+NEEDS TO BE UPDATED: (current example at bottom)
 The lda package can quickly be installed with pip install lda.
 
-You can navigate to the location it is installed (something like /usr/local/lib/python2.7/site-packages/lda) and copy the contents of mod_lda.py to the lda.py file. Everything will work as before except that there is a new method called LDA.fit_seeded(X,seeds) which expects an extra parameter called seeds. Seeds is a list of lists. Each inner list contains indices referring to words in the vocab. These words will be the seeds for a topic.
+Everything will work as before except that there is a new method called LDA.fit_seeded(X,seeds) which expects an extra parameter called seeds. Seeds is a list of lists. Each inner list contains indices referring to words in the vocab. These words will be the seeds for a topic.
 
 Created a Model class to wrap the LDA model. Just initialize the Model class with a set of documents then call
 the documents_to_topic_model method to create the LDA model. display_topics can then be used to display the 
@@ -22,5 +23,23 @@ parameters to create the topic model.
 
 Finally, you can display the top words in each topic.
 
-Example code is in example.py
+TO RUN EVALUATIOn
+
+import lda_model
+import evaluation
+import logging
+from time import time
+logger = logging.getLogger(__name__)
+
+if __name__ == '__main__':
+	logging.basicConfig(  level=logging.DEBUG)
+	bc = ['alt.atheism','rec.sport.baseball','talk.politics.guns']
+	ic = ['sci.space']
+	d = .8
+
+	bc = ['alt.atheism','rec.sport.baseball','talk.politics.guns']
+	ic = ['sci.space']
+	d = .8
+
+
 

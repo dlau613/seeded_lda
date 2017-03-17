@@ -7,7 +7,8 @@ from sklearn.datasets import fetch_20newsgroups
 
 from stopwords import STOP_WORDS
 import numpy as np
-import lda
+import mod_lda
+
 
 import logging
 
@@ -87,7 +88,7 @@ class LDA_Model:
 		# TODO: currently crashes if a seed_word is not in the vocab
 		seeds = self.get_seed_indices(seed_words)
 
-		self.model = lda.LDA(n_topics=n_topics, n_iter=n_iter, random_state=1,refresh=100)
+		self.model = mod_lda.LDA(n_topics=n_topics, n_iter=n_iter, random_state=1,refresh=100)
 		if original:
 			self.model.fit(X)
 		else:
