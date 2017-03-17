@@ -40,6 +40,6 @@ if __name__ == '__main__':
 	bc = ['alt.atheism','rec.sport.baseball','talk.politics.guns']
 	ic = ['sci.space']
 	d = .8
-
+	evaluation.evaluate(bc,ic,d,num_seeds=5)
 
 
