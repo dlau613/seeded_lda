@@ -34,7 +34,7 @@ def get_topic_seeds(categories,number):
 def evaluate(bc,ic,d,num_seeds):
 	n_topics = len(bc+ic)
 	n_features = 1000
-	n_iter = 500
+	n_iter = 400
 
 	df = lda_model.DataFetcher(bc,ic,d)
 	imbl_docs = df.get_data()
@@ -44,7 +44,7 @@ def evaluate(bc,ic,d,num_seeds):
 	t0 = time()
 	n_model.documents_to_topic_model(n_topics,n_features,n_iter,seed_words)
 	logger.info("New lda done in {}".format(time()-t0))
-	logger.info("New lda perplexity = {}".format("TODO"))
+	logger.info("New lda perplexity = {}".format(n_model.model.log_perplexity()))
 	n_model.display_topics(50)
 
 
@@ -55,10 +55,43 @@ def evaluate(bc,ic,d,num_seeds):
 	t0 = time()
 	o_model.documents_to_topic_model(n_topics,n_features,n_iter,original=True)
 	logger.info("Old lda done in {}".format(time()-t0))
-	logger.info("Old lda perplexity = {}".format("TODO"))
+	logger.info("Old lda perplexity = {}".format(o_model.model.log_perplexity()))
 	o_model.display_topics(50)
 
-	p, r = precision_recall(n_model,o_model)
+	I = len(bc)
+	prs = precision_recall(n_model.get_top_words()[I:],o_model.get_top_words())
+	for pr in prs:
+		logger.info("Precision: {}, Recall: {}".format(pr[0],pr[1]))
+		
 
-def precision_recall(n_model,o_model):
-	return (1,2)
+	return (n_model,o_model)
+
+def precision_recall(n_topics,o_topics):
+	o_topics_ = list(o_topics)
+	prs = []
+	# compare each new topic to the remaining old topics
+	for k,nt in enumerate(n_topics):
+		i = 0
+		cur = [0,0]
+		# find the old topic which gives the highest precision + recall. indicate that topic by j
+		# record that precision and recall for the new topic
+		for j,ot in enumerate(o_topics_):
+			p,r = pr(nt,ot)
+			if p+r > cur[0]+cur[1]:
+				cur = p,r
+				i = j
+
+		# remove topic j for old topics
+		logger.debug('Matched Topic {} with Topic {}'.format(len(o_topics)-len(n_topics)+k,i))
+		prs.append(cur)
+		o_topics_.pop(i)
+	return prs
+
+def pr(predicted,expected):
+	correct = 0;
+	for w in predicted:
+		if w in expected:
+			correct +=1
+	p = correct/float(len(predicted))
+	r = correct/float(len(expected))
+	return (p,r)

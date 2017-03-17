@@ -123,3 +123,24 @@ class LDA_Model:
 	    for i, topic_dist in enumerate(topic_word):
 	    	topic_words = np.array(self.vocab)[np.argsort(topic_dist)][:-(n_top_words+1):-1]
 	    	print('Topic {}: {}'.format(i, ' '.join(topic_words)))
+	    	indices = np.argsort(topic_dist)
+	    	# logger.debug(indices)
+	    	logger.debug(topic_dist[indices[len(indices)-n_top_words]])
+
+	def get_top_words(self,p=.002):
+		topic_word = self.model.topic_word_
+		top_words = []
+		for i,topic_dist in enumerate(topic_word):
+			indices = np.argsort(topic_dist)[::-1]
+			I = len(indices)
+			for j in range(1,len(indices)):
+				if topic_dist[indices[j]] < p:
+					I = j
+					logger.debug('Topic {} has {} words with p>{}'.format(i,I,p))
+					break
+			temp = np.array(self.vocab)[indices[:I]]
+			# print('Topic {}: {}'.format(i,' '.join(temp)))
+			top_words.append(temp)
+		return top_words
+
+
