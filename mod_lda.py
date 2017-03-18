@@ -125,7 +125,7 @@ class LDA:
         self._fit(X)
         return self
 
-    def fit_seeded(self, X, seeds=None):
+    def fit_seeded(self, X, seeds=None,m=10):
         """Fit the model with X.
 
         Parameters
@@ -141,7 +141,7 @@ class LDA:
         self : object
             Returns the instance itself.
         """
-        self._fit_seeded(X,seeds)
+        self._fit_seeded(X,seeds,m)
         return self
 
     def fit_transform(self, X, y=None):
@@ -280,7 +280,7 @@ class LDA:
         del self.ZS
         return self
 
-    def _fit_seeded(self, X,seeds=None):
+    def _fit_seeded(self, X,seeds=None,m=10):
         """Fit the model to the data X
 
         Parameters
@@ -299,7 +299,7 @@ class LDA:
         if seeds == None:
             self._initialize(X)
         else:
-            self._initialize_seeded(X)
+            self._initialize_seeded(X,m)
         for it in range(self.n_iter):
             # FIXME: using numpy.roll with a random shift might be faster
             # shuffle the random numbers in rand in place
@@ -353,7 +353,7 @@ class LDA:
             nz_[z_new] += 1
         self.loglikelihoods_ = []
 
-    def _initialize_seeded(self, X):
+    def _initialize_seeded(self, X,m=10):
         # X is the doc-term matrix. documents x features (vocab size)
         D, W = X.shape
         N = int(X.sum())
@@ -377,7 +377,7 @@ class LDA:
         np.testing.assert_equal(N, len(WS))
         # seeds = [[657,370,900,277],[831,597,282,493]]
         # m = N//100
-        m=10
+        # m=10
         for i in range(N):
             w, d = WS[i], DS[i]
             is_seed = 0

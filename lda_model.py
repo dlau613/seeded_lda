@@ -64,7 +64,7 @@ class DataFetcher:
 
 
 class LDA_Model:
-	def __init__(self, documents=None,max_df=.5,min_df=2):
+	def __init__(self, documents=None,max_df=.50,min_df=2):
 		self.documents = documents
 		self.max_df = max_df
 		self.min_df = min_df
@@ -73,7 +73,7 @@ class LDA_Model:
 	def set_documents(self,documents):
 		self.documents = documents
 
-	def documents_to_topic_model(self,n_topics,n_features,n_iter,seed_words=None,original=False):
+	def documents_to_topic_model(self,n_topics,n_features,n_iter,seed_words=None,original=False,m=10):
 		print("Extracting tf features for LDA...")
 		# We use a few heuristics to filter out useless terms early on: the posts are stripped of headers,
 		# footers and quoted replies, and common English words, words occurring in only one document or 
@@ -92,7 +92,7 @@ class LDA_Model:
 		if original:
 			self.model.fit(X)
 		else:
-			self.model.fit_seeded(X,seeds)
+			self.model.fit_seeded(X,seeds,m)
 
 	def test(self,n):
 		return self.model.transform(self.X[n])
@@ -144,4 +144,10 @@ class LDA_Model:
 			top_words.append(temp)
 		return top_words
 
-
+	def get_top_words_absolute(self,n=100):
+		topic_word = self.model.topic_word_
+		top_words = []
+		for i,topic_dist in enumerate(topic_word):
+			topic_words = np.array(self.vocab)[np.argsort(topic_dist)][:-n+1:-1]
+			top_words.append(topic_words)
+		return top_words
