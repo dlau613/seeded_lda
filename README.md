@@ -1,11 +1,17 @@
 Modified the lda package that can be found [here](https://pypi.python.org/pypi/lda)
 
-NEEDS TO BE UPDATED: (current example at bottom)
-The lda package can quickly be installed with pip install lda.
+Instructions To Run:
+Install the lda package with pip install lda. The data needed for our program will be downloaded
+automatically.
 
-Everything will work as before except that there is a new method called LDA.fit_seeded(X,seeds) which expects an extra parameter called seeds. Seeds is a list of lists. Each inner list contains indices referring to words in the vocab. These words will be the seeds for a topic.
+Run python example.py. This will run the our modified LDA and original LDA on different sets
+of balanced and imbalanced data. The modified LDA will have additional seed words as input.
+It will print out information including the run time, perplexity, precision and recall, and it
+will display some of the top words for each topic. 
 
-Created a Model class to wrap the LDA model. Just initialize the Model class with a set of documents then call
+Classes:
+
+Created a Model class to wrap the LDA model. Initialize the Model class with a set of documents then call
 the documents_to_topic_model method to create the LDA model. display_topics can then be used to display the 
 top words for each topic.
 
@@ -23,7 +29,8 @@ parameters to create the topic model.
 
 Finally, you can display the top words in each topic.
 
-TO RUN EVALUATIOn
+
+Example of Using the DataFetcher and LDA_Model Classes:
 
 import lda_model
 import evaluation
@@ -33,13 +40,16 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
 	logging.basicConfig(  level=logging.DEBUG)
-	bc = ['alt.atheism','rec.sport.baseball','talk.politics.guns']
-	ic = ['sci.space']
-	d = .8
 
 	bc = ['alt.atheism','rec.sport.baseball','talk.politics.guns']
 	ic = ['sci.space']
 	d = .8
-	evaluation.evaluate(bc,ic,d,num_seeds=5)
+	seed_words = [['god','evidence','religion','think','question'], ['baseball','hit','runs','game','player'],
+		['gun','guns','right','fbi','law'],['space','nasa','earth','launch','shuttle']]
+	df = lda_model.DataFetcher(bc,ic,d)
+	documents = df.get_data()
 
+	model = lda_model.LDA_Model(documents)
+	model.documents_to_topics(n_topics=4,n_features=1000,n_iter=200,seed_words)
+	model.display_topics(15)
 

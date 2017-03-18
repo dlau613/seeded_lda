@@ -48,7 +48,7 @@ def evaluate(bc,ic,d,num_seeds,m=10,p=.002):
 	t0 = time()
 	n_model.documents_to_topic_model(n_topics,n_features,n_iter,seed_words,m=m)
 	logger.info("New lda done in {}".format(time()-t0))
-	logger.info("New lda perplexity = {}".format(n_model.model.log_perplexity()))
+	logger.info("New lda perplexity = {}".format(n_model.model.log_perplexity(n_model.X)))
 	n_model.display_topics(15)
 
 
@@ -59,11 +59,11 @@ def evaluate(bc,ic,d,num_seeds,m=10,p=.002):
 	t0 = time()
 	o_model.documents_to_topic_model(n_topics,n_features,n_iter,original=True,m=m)
 	logger.info("Old lda done in {}".format(time()-t0))
-	logger.info("Old lda perplexity = {}".format(o_model.model.log_perplexity()))
+	logger.info("Old lda perplexity = {}".format(o_model.model.log_perplexity(o_model.X)))
 	o_model.display_topics(15)
 
 	I = len(bc)
-	prs = precision_recall(n_model.get_top_words(p)[I:],o_model.get_top_words(.002))
+	prs = precision_recall(n_model.get_top_words(p)[I:],o_model.get_top_words(p))
 	for pr in prs:
 		logger.info("Precision: {}, Recall: {}".format(pr[0],pr[1]))
 

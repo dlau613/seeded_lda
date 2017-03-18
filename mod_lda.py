@@ -419,26 +419,47 @@ class LDA:
         lda._lda._sample_topics(self.WS, self.DS, self.ZS, self.nzw_, self.ndz_, self.nz_,
                                 alpha, eta, rands)
 
-    def log_perplexity(self):
+    def log_perplexity(self,X):
         """ formula:
         https://shuyo.wordpress.com/2011/05/24/collapsed-gibbs-sampling-estimation-for-latent-dirichlet-allocation-1/#comment-706
 
         """
-        # N = self.nzw_.sum()
-        # logger.debug(N)
-        # n_features=self.components_.shape[1]
-        # Phi=self.components_
-        # Theta=self.doc_topic_
-        # Temp=np.log(np.dot(Theta,Phi))  # shape: [n_samples, n_features]= [m,n](in the website above)
-        # log_perp=Temp.sum()/N
+        # n_features = self.components_.shape[1]
+        # n_topics = self.doc_topic_.shape[1]
+        # Phi = (self.nzw_ + self.eta).astype(float) / (self.n_topics + n_features * self.eta)
+        # Theta_temp = np.divide(1, self.ndz_.sum(axis=1) + n_topics * self.alpha)
+        # Theta_temp2 = (self.ndz_ + self.alpha).astype(float)
+        # Theta = Theta_temp2 * Theta_temp[:, np.newaxis]
+
+        # dwmatrix = np.log(np.dot(Theta,Phi))  # shape: [n_samples, n_features]= [m,n](in the website above)
+        # log_perp = dwmatrix.sum() / self.nzw_.sum()
         # return log_perp
+
         n_features = self.components_.shape[1]
         n_topics = self.doc_topic_.shape[1]
         Phi = (self.nzw_ + self.eta).astype(float) / (self.n_topics + n_features * self.eta)
         Theta_temp = np.divide(1, self.ndz_.sum(axis=1) + n_topics * self.alpha)
         Theta_temp2 = (self.ndz_ + self.alpha).astype(float)
-        Theta = Theta_temp2 * Theta_temp[:, np.newaxis]
+        Theta = Theta_temp2 * Theta_temp[:, np.newaxis]   # *：点乘
 
         dwmatrix = np.log(np.dot(Theta,Phi))  # shape: [n_samples, n_features]= [m,n](in the website above)
+        dwmatrix=X * dwmatrix  # multiply by element
         log_perp = dwmatrix.sum() / self.nzw_.sum()
-        return log_perp
+        return np.exp(log_perp)
+    def perplexity(self):
+        """ formula:
+        https://shuyo.wordpress.com/2011/05/24/collapsed-gibbs-sampling-estimation-for-latent-dirichlet-allocation-1/#comment-706
+
+        """
+        n_features = self.components_.shape[1]
+        n_topics = self.doc_topic_.shape[1]
+        Phi = (self.nzw_ + self.eta).astype(float) / (self.n_topics + n_features * self.eta)
+        Theta_temp = np.divide(1, self.ndz_.sum(axis=1) + n_topics * self.alpha)
+        Theta_temp2 = (self.ndz_ + self.alpha).astype(float)
+        Theta = Theta_temp2 * Theta_temp[:, np.newaxis]   # *：点乘
+
+        dwmatrix = np.log(Theta * Phi)  # shape: [n_samples, n_features]= [m,n](in the website above)
+        dwmatrix=self.X_ * dwmatrix  # multiply by element
+        log_perp = dwmatrix.sum() / self.nzw_.sum()
+        return np.exp(-log_perp)
+
